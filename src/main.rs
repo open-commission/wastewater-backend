@@ -1,7 +1,7 @@
 use axum::{
     Router,
 };
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tracing_subscriber;
 
 mod config;
@@ -16,7 +16,7 @@ use models::user::User;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub users: Vec<User>,
+    pub users: Arc<RwLock<Vec<User>>>,
     pub config: ServerConfig,
 }
 
@@ -30,7 +30,7 @@ async fn main() {
     
     // Create initial state
     let state = Arc::new(AppState {
-        users: vec![],
+        users: Arc::new(RwLock::new(vec![])),
         config: config.clone(),
     });
 
