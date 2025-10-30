@@ -35,8 +35,11 @@ async fn main() {
     });
 
     // Create router
-    let app = Router::new()
-        .nest("/api/v1", routes::api::create_api_router())
+    let api_router = Router::new().nest("/api/v1", routes::api::create_api_router());
+    let static_router = routes::static_files::create_static_router();
+    
+    let app = static_router
+        .merge(api_router)
         .layer(axum::middleware::from_fn(middleware::logging::logging_middleware))
         .with_state(state);
 

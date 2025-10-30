@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellaris Rust Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stellaris Rust Application</h1>
+        <p>Welcome to the Stellaris Rust application. This is a sample frontend for the API.</p>
+        
+        <h2>Available API Endpoints:</h2>
+        
+        <div class="endpoint">
+            <h3>Get all users</h3>
+            <p><code>GET /api/v1/users</code></p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>Create a new user</h3>
+            <p><code>POST /api/v1/users</code></p>
+            <p>Body: <code>{"name": "string", "email": "string"}</code></p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>Get a specific user</h3>
+            <p><code>GET /api/v1/users/{id}</code></p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>Update a user</h3>
+            <p><code>PUT /api/v1/users/{id}</code></p>
+            <p>Body: <code>{"name": "string", "email": "string"}</code></p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>Delete a user</h3>
+            <p><code>DELETE /api/v1/users/{id}</code></p>
+        </div>
+    </div>
+</body>
+</html>
