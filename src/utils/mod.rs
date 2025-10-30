@@ -1,2 +1,13 @@
 pub mod response;
 pub mod error;
+pub mod gpio;
+pub mod pwm;
+pub mod i2c;
+pub mod spi;
+pub mod adc;
+pub mod uart;
+pub mod can;
+pub mod i2s;
+pub mod usb;
+pub mod ethernet;
+pub mod modbus;
