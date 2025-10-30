@@ -1,10 +1,6 @@
-#[allow(unused_imports)]
-use axum::{
-    routing::{get, post, put, delete},
-    Router,
-};
-use std::sync::Arc;
 use crate::{handlers::user, AppState};
+use axum::{routing::get, Router};
+use std::sync::Arc;
 
 pub fn create_api_router() -> Router<Arc<AppState>> {
     Router::new()
