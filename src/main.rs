@@ -1,6 +1,4 @@
-use axum::Router;
 use std::sync::{Arc, RwLock};
-use tracing_subscriber;
 
 mod config;
 mod handlers;
@@ -8,10 +6,15 @@ mod middleware;
 mod models;
 mod routes;
 mod utils;
+mod database;
+mod mqtt;
 
 use config::server::ServerConfig;
 use models::user::User;
-use utils::modbus_example;
+
+use database::redb::test_redb_basic;
+
+use mqtt::rumqtt::mqtt_test;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -48,5 +51,9 @@ async fn main() {
     //
     // axum::serve(listener, app).await.unwrap();
 
-    modbus_example::run_tcp_server().await.expect("Failed to run TCP server");
+    // modbus_example::run_tcp_server().await.expect("Failed to run TCP server")
+
+    // test_redb_basic().expect("Failed to run redb test")
+
+    mqtt_test().await.expect("Failed to run mqtt test")
 }

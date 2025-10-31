@@ -9,7 +9,11 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tracing = "0.1"
-tracing-subscriber = "0.3"
 anyhow = "1.0"
 tokio-modbus = { version = "*", features = ["server", "tcp-server", "rtu-server"] }
 tokio-serial = "5.4.4"
+redb = "3.1.0"
+thiserror = "2.0.17"
+bincode = "2.0.1"
+rumqttc = "0.25.0"
+tracing-subscriber = "0.3.20"
