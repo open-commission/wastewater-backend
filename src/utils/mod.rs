@@ -11,3 +11,4 @@ pub mod i2s;
 pub mod usb;
 pub mod ethernet;
 pub mod modbus;
+pub mod modbus_example;
