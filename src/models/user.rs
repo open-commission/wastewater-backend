@@ -1,19 +1,17 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
-    pub id: u64,
+    pub id: u32,
     pub name: String,
     pub email: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct CreateUserRequest {
     pub name: String,
     pub email: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct UpdateUserRequest {
     pub name: Option<String>,
     pub email: Option<String>,

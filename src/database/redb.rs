@@ -1,4 +1,4 @@
-use bincode::{config, Decode, Encode};
+    use bincode::{config, Decode, Encode};
 use redb::{
     CommitError, Database, DatabaseError, ReadableDatabase, ReadableTable, StorageError,
     TableDefinition, TableError, TableStats, TransactionError,

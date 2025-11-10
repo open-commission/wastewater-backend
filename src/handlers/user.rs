@@ -3,9 +3,9 @@ use axum::{
     response::Json,
     extract::{Path, State},
 };
-use std::sync::{Arc};
+use std::sync::Arc;
 use crate::models::user::{User, CreateUserRequest, UpdateUserRequest};
-use crate::AppState;
+use crate::app_state::AppState;
 use crate::utils::error::AppError;
 
 
@@ -18,7 +18,7 @@ pub async fn get_users(
 
 pub async fn get_user(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<u64>,
+    Path(id): Path<u32>,
 ) -> Result<Json<User>, AppError> {
     let users = state.users.read().map_err(|_| AppError::InternalError)?;
     let user = users.iter().find(|u| u.id == id)
@@ -58,7 +58,7 @@ pub async fn create_user(
 
 pub async fn update_user(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<u64>,
+    Path(id): Path<u32>,
     Json(payload): Json<UpdateUserRequest>,
 ) -> Result<Json<User>, AppError> {
     let mut users = state.users.write().map_err(|_| AppError::InternalError)?;
@@ -85,7 +85,7 @@ pub async fn update_user(
 
 pub async fn delete_user(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<u64>,
+    Path(id): Path<u32>,
 ) -> Result<StatusCode, AppError> {
     let mut users = state.users.write().map_err(|_| AppError::InternalError)?;
     let len_before = users.len();

@@ -1,59 +1,49 @@
-use std::sync::{Arc, RwLock};
-
 mod config;
+mod database;
 mod handlers;
 mod middleware;
 mod models;
+mod mqtt;
 mod routes;
 mod utils;
-mod database;
-mod mqtt;
+mod app_state;
 
-use config::server::ServerConfig;
+use tracing_subscriber;
+use std::sync::{Arc, RwLock};
 use models::user::User;
-
-use database::redb::test_redb_basic;
-
-use mqtt::rumqtt::mqtt_test;
-
-#[derive(Clone)]
-pub struct AppState {
-    pub users: Arc<RwLock<Vec<User>>>,
-    pub config: ServerConfig,
-}
+use app_state::AppState;
+use database::sea_orm_db::DbManager;
+use database::sea_orm_example::run_sea_orm_example;
 
 #[tokio::main]
-async fn main() {
-    // // Initialize tracing
-    // tracing_subscriber::fmt::init();
-    //
-    // // Load configuration
-    // let config = ServerConfig::default();
-    //
-    // // Create initial state
-    // let state = Arc::new(AppState {
-    //     users: Arc::new(RwLock::new(vec![])),
-    //     config: config.clone(),
-    // });
-    //
-    // // Create router
-    // let api_router = Router::new().nest("/api/v1", routes::api::create_api_router());
-    // let static_router = routes::static_files::create_static_router();
-    //
-    // let app = static_router
-    //     .merge(api_router)
-    //     .layer(axum::middleware::from_fn(middleware::logging::logging_middleware))
-    //     .with_state(state);
-    //
-    // // Run server
-    // let listener = tokio::net::TcpListener::bind(config.address()).await.unwrap();
-    // tracing::info!("Server listening on {}", config.address());
-    //
-    // axum::serve(listener, app).await.unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
 
-    // modbus_example::run_tcp_server().await.expect("Failed to run TCP server")
+    // 初始化应用状态
+    let initial_users = vec![
+        User {
+            id: 1,
+            name: "张三".to_string(),
+            email: "zhangsan@example.com".to_string(),
+        },
+        User {
+            id: 2,
+            name: "李四".to_string(),
+            email: "lisi@example.com".to_string(),
+        },
+    ];
 
-    // test_redb_basic().expect("Failed to run redb test")
+    let _app_state = AppState {
+        users: Arc::new(RwLock::new(initial_users)),
+    };
 
-    mqtt_test().await.expect("Failed to run mqtt test")
+    // 测试SeaORM数据库连接
+    println!("正在测试SeaORM数据库连接...");
+    let db_manager = DbManager::new("sqlite::memory:").await?;
+    println!("SeaORM数据库连接成功: {:?}", db_manager.get_connection().ping().await);
+    
+    // 运行SeaORM示例
+    run_sea_orm_example().await?;
+
+    Ok(())
 }

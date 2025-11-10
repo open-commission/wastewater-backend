@@ -5,7 +5,7 @@ use axum::{
     http::{StatusCode, Uri},
 };
 use std::sync::Arc;
-use crate::AppState;
+use crate::app_state::AppState;
 
 pub fn create_static_router() -> Router<Arc<AppState>> {
     Router::new()
