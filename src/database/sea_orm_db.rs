@@ -34,27 +34,3 @@ impl DbManager {
         &self.db
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use sea_orm::{Condition, Set};
-    
-    // 创建一个简单的测试实体
-    mod test_entity {
-        use sea_orm::entity::prelude::*;
-
-        #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-        #[sea_orm(table_name = "test_items")]
-        pub struct Model {
-            #[sea_orm(primary_key)]
-            pub id: i32,
-            pub name: String,
-        }
-
-        #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-        pub enum Relation {}
-
-        impl ActiveModelBehavior for ActiveModel {}
-    }
-}

@@ -6,7 +6,7 @@ pub async fn run_sea_orm_example() -> Result<(), Box<dyn std::error::Error>> {
     println!("开始运行SeaORM示例...");
 
     // 创建数据库连接
-    let db_manager = DbManager::new("sqlite::memory:").await?;
+    let db_manager = DbManager::new("sqlite://guolu.db?mode=rwc").await?;
     let db = db_manager.get_connection();
     
     // 创建表
@@ -15,8 +15,14 @@ pub async fn run_sea_orm_example() -> Result<(), Box<dyn std::error::Error>> {
     let schema = Schema::new(builder);
     let create_table_statement = schema.create_table_from_entity(device::Entity);
     
-    // 执行创建表语句
-    let _ = db.execute(builder.build(&create_table_statement)).await?;
+    // 执行创建表语句，忽略表已存在的错误
+    match db.execute(builder.build(&create_table_statement)).await {
+        Ok(_) => println!("设备表创建成功"),
+        Err(e) => {
+            println!("创建表时出现错误（可能是表已存在）: {}", e);
+            println!("继续执行后续操作...");
+        }
+    }
     
     // 插入一些示例数据
     let device1 = device::ActiveModel {

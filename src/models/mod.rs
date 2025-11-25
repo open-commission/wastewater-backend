@@ -1,2 +1,9 @@
 pub mod user;
 pub mod device;
+pub mod ph_value;
+pub mod tds_value;
+pub mod turbidity_value;
+pub mod flow_value;
+pub mod alarm_rule;
+pub mod alarm_log;
+pub mod automation_rule;

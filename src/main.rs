@@ -1,3 +1,4 @@
+mod app_state;
 mod config;
 mod database;
 mod handlers;
@@ -6,14 +7,14 @@ mod models;
 mod mqtt;
 mod routes;
 mod utils;
-mod app_state;
 
-use tracing_subscriber;
-use std::sync::{Arc, RwLock};
-use models::user::User;
 use app_state::AppState;
 use database::sea_orm_db::DbManager;
 use database::sea_orm_example::run_sea_orm_example;
+use models::user::User;
+use sea_query::Iden;
+use std::sync::{Arc, RwLock};
+use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -25,11 +26,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             id: 1,
             name: "张三".to_string(),
             email: "zhangsan@example.com".to_string(),
+            password: "123456".to_string(),
+            permission: "123".to_string(),
         },
         User {
             id: 2,
             name: "李四".to_string(),
             email: "lisi@example.com".to_string(),
+            password: "123456".to_string(),
+            permission: "123".to_string(),
         },
     ];
 
@@ -39,9 +44,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 测试SeaORM数据库连接
     println!("正在测试SeaORM数据库连接...");
-    let db_manager = DbManager::new("sqlite::memory:").await?;
-    println!("SeaORM数据库连接成功: {:?}", db_manager.get_connection().ping().await);
-    
+    let db_manager = DbManager::new("sqlite://guolu.db?mode=rwc").await?;
+    println!(
+        "SeaORM数据库连接成功: {:?}",
+        db_manager.get_connection().ping().await
+    );
+
     // 运行SeaORM示例
     run_sea_orm_example().await?;
 
