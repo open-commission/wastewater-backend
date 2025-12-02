@@ -1,6 +1,7 @@
 use crate::database::sea_orm_db::DbManager;
 use crate::models::device;
 use sea_orm::{EntityTrait, Set, Schema, ConnectionTrait};
+use chrono::Utc;
 
 pub async fn run_sea_orm_example() -> Result<(), Box<dyn std::error::Error>> {
     println!("开始运行SeaORM示例...");
@@ -29,6 +30,18 @@ pub async fn run_sea_orm_example() -> Result<(), Box<dyn std::error::Error>> {
         name: Set("锅炉1".to_string()),
         location: Set("车间A".to_string()),
         status: Set(1), // 1表示运行中
+        device_type: Set("锅炉".to_string()),
+        manufacturer: Set("制造商A".to_string()),
+        model: Set("型号1".to_string()),
+        installation_date: Set(Utc::now()),
+        last_maintenance: Set(Utc::now()),
+        operational_hours: Set(100.0),
+        temperature: Set(80.0),
+        pressure: Set(1.5),
+        flow_rate: Set(10.0),
+        power_consumption: Set(5.0),
+        created_at: Set(Utc::now()),
+        updated_at: Set(Utc::now()),
         ..Default::default()
     };
     
@@ -36,6 +49,18 @@ pub async fn run_sea_orm_example() -> Result<(), Box<dyn std::error::Error>> {
         name: Set("锅炉2".to_string()),
         location: Set("车间B".to_string()),
         status: Set(0), // 0表示停止
+        device_type: Set("锅炉".to_string()),
+        manufacturer: Set("制造商B".to_string()),
+        model: Set("型号2".to_string()),
+        installation_date: Set(Utc::now()),
+        last_maintenance: Set(Utc::now()),
+        operational_hours: Set(200.0),
+        temperature: Set(75.0),
+        pressure: Set(1.2),
+        flow_rate: Set(8.0),
+        power_consumption: Set(4.5),
+        created_at: Set(Utc::now()),
+        updated_at: Set(Utc::now()),
         ..Default::default()
     };
     

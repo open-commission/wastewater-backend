@@ -3,6 +3,7 @@ use sea_orm::{
 };
 use std::fmt::Debug;
 use std::result::Result as StdResult;
+use std::sync::Arc;
 
 /// 数据库错误类型
 #[derive(Debug, thiserror::Error)]
@@ -18,15 +19,16 @@ pub enum DbError {
 pub type Result<T> = StdResult<T, DbError>;
 
 /// 泛型数据库工具类
+#[derive(Debug, Clone)]
 pub struct DbManager {
-    db: DatabaseConnection,
+    db: Arc<DatabaseConnection>,
 }
 
 impl DbManager {
     /// 创建或打开数据库连接
     pub async fn new(uri: &str) -> Result<Self> {
         let db = Database::connect(uri).await?;
-        Ok(DbManager { db })
+        Ok(DbManager { db: Arc::new(db) })
     }
 
     /// 获取数据库连接

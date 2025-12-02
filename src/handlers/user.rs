@@ -1,74 +1,92 @@
 use crate::app_state::AppState;
-use crate::models::user::User;
+use crate::models::user::Model as User;
 use crate::utils::error::AppError;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::Json,
 };
-use std::sync::Arc;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize)]
-pub struct LoginRequest {
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct CreateUserRequest {
+    pub name: String,
     pub email: String,
     pub password: String,
+    pub permission: String,
 }
 
-#[derive(Debug, Serialize)]
-pub struct LoginResponse {
-    pub token: String,
-    pub user: User,
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct UpdateUserRequest {
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
+    pub permission: Option<String>,
 }
 
-pub async fn get_users(State(state): State<Arc<AppState>>) -> Result<Json<Vec<User>>, AppError> {
-    let users = state
-        .users
-        .read()
-        .map_err(|_| AppError::InternalError)?
-        .clone();
+/// 获取用户列表
+#[utoipa::path(
+    get,
+    path = "/users",
+    responses(
+        (status = 200, description = "获取用户列表成功", body = [User])
+    ),
+    tag = "Users"
+)]
+pub async fn get_users(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<User>>, AppError> {
+    let users = state.users.read().unwrap().clone();
     Ok(Json(users))
 }
 
+/// 获取指定用户
+#[utoipa::path(
+    get,
+    path = "/users/{id}",
+    params(
+        ("id" = i32, Path, description = "用户ID")
+    ),
+    responses(
+        (status = 200, description = "获取用户成功", body = User),
+        (status = 404, description = "用户未找到")
+    ),
+    tag = "Users"
+)]
 pub async fn get_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<u32>,
 ) -> Result<Json<User>, AppError> {
-    let users = state.users.read().map_err(|_| AppError::InternalError)?;
-    let user = users
-        .iter()
-        .find(|u| u.id == id)
-        .ok_or(AppError::UserNotFound)?
-        .clone();
+    let users = state.users.read().unwrap();
+    let user = users.iter().find(|u| u.id == id).cloned();
 
-    Ok(Json(user))
+    match user {
+        Some(u) => Ok(Json(u)),
+        None => Err(AppError::NotFound),
+    }
 }
 
+/// 创建用户
+#[utoipa::path(
+    post,
+    path = "/users",
+    request_body = CreateUserRequest,
+    responses(
+        (status = 201, description = "创建用户成功", body = User),
+        (status = 400, description = "请求参数错误")
+    ),
+    tag = "Users"
+)]
 pub async fn create_user(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<User>,
+    Json(payload): Json<CreateUserRequest>,
 ) -> Result<(StatusCode, Json<User>), AppError> {
-    // 验证输入
-    if payload.name.is_empty() {
-        return Err(AppError::InvalidInput("Name cannot be empty".into()));
-    }
-
-    if payload.email.is_empty() {
-        return Err(AppError::InvalidInput("Email cannot be empty".into()));
-    }
-
-    // 检查邮箱是否已存在
-    {
-        let users = state.users.read().map_err(|_| AppError::InternalError)?;
-        if users.iter().any(|u| u.email == payload.email) {
-            return Err(AppError::InvalidInput("Email already exists".into()));
-        }
-    }
-
-    let mut users = state.users.write().map_err(|_| AppError::InternalError)?;
-
-    // 生成唯一的ID
-    let new_id = users.iter().map(|user| user.id).max().unwrap_or(0) + 1;
+    let mut users = state.users.write().unwrap();
+    
+    // 确定新用户的ID
+    let new_id = users.iter().map(|u| u.id).max().unwrap_or(0) + 1;
 
     let user = User {
         id: new_id,
@@ -79,79 +97,78 @@ pub async fn create_user(
     };
 
     users.push(user.clone());
+
     Ok((StatusCode::CREATED, Json(user)))
 }
 
+/// 更新用户
+#[utoipa::path(
+    put,
+    path = "/users/{id}",
+    params(
+        ("id" = i32, Path, description = "用户ID")
+    ),
+    request_body = UpdateUserRequest,
+    responses(
+        (status = 200, description = "更新用户成功", body = User),
+        (status = 404, description = "用户未找到")
+    ),
+    tag = "Users"
+)]
 pub async fn update_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<u32>,
-    Json(payload): Json<User>,
+    Json(payload): Json<UpdateUserRequest>,
 ) -> Result<Json<User>, AppError> {
-    // 先检查邮箱是否已存在于其他用户（在获取写锁之前进行检查）
-    {
-        let users = state.users.read().map_err(|_| AppError::InternalError)?;
-        if users.iter().any(|u| u.id != id && u.email == payload.email) {
-            return Err(AppError::InvalidInput("Email already exists".into()));
+    let mut users = state.users.write().unwrap();
+    let user = users.iter_mut().find(|u| u.id == id);
+
+    match user {
+        Some(u) => {
+            if let Some(name) = payload.name {
+                u.name = name;
+            }
+            if let Some(email) = payload.email {
+                u.email = email;
+            }
+            if let Some(password) = payload.password {
+                u.password = password;
+            }
+            if let Some(permission) = payload.permission {
+                u.permission = permission;
+            }
+            
+            let user_clone = u.clone();
+            Ok(Json(user_clone))
         }
+        None => Err(AppError::NotFound),
     }
-    
-    let mut users = state.users.write().map_err(|_| AppError::InternalError)?;
-    let user = users
-        .iter_mut()
-        .find(|u| u.id == id)
-        .ok_or(AppError::UserNotFound)?;
-
-    // 注意：User 结构体中的字段都是 String 类型，不是 Option<String>
-    if !payload.name.is_empty() {
-        user.name = payload.name;
-    }
-
-    if !payload.email.is_empty() {
-        user.email = payload.email;
-    }
-
-    user.password = payload.password;
-    user.permission = payload.permission;
-
-    let user_clone = user.clone();
-    Ok(Json(user_clone))
 }
 
+/// 删除用户
+#[utoipa::path(
+    delete,
+    path = "/users/{id}",
+    params(
+        ("id" = i32, Path, description = "用户ID")
+    ),
+    responses(
+        (status = 204, description = "删除用户成功"),
+        (status = 404, description = "用户未找到")
+    ),
+    tag = "Users"
+)]
 pub async fn delete_user(
     State(state): State<Arc<AppState>>,
     Path(id): Path<u32>,
 ) -> Result<StatusCode, AppError> {
-    let mut users = state.users.write().map_err(|_| AppError::InternalError)?;
+    let mut users = state.users.write().unwrap();
     let len_before = users.len();
     users.retain(|u| u.id != id);
-
-    if users.len() == len_before {
-        Err(AppError::UserNotFound)
-    } else {
+    
+    if users.len() < len_before {
         Ok(StatusCode::NO_CONTENT)
+    } else {
+        Err(AppError::NotFound)
     }
-}
-
-pub async fn login(
-    State(state): State<Arc<AppState>>,
-    Json(payload): Json<LoginRequest>,
-) -> Result<Json<LoginResponse>, AppError> {
-    let users = state.users.read().map_err(|_| AppError::InternalError)?;
-    
-    // 查找匹配的用户
-    let user = users
-        .iter()
-        .find(|u| u.email == payload.email && u.password == payload.password)
-        .cloned()
-        .ok_or(AppError::InvalidCredentials)?;
-
-    // 生成简单token（实际项目中应该使用JWT或其他安全的token机制）
-    let token = format!("token_{}_{}", user.id, chrono::Utc::now().timestamp());
-    
-    let response = LoginResponse {
-        token,
-        user,
-    };
-    
-    Ok(Json(response))
 }

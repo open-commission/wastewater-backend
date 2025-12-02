@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 #[derive(Debug)]
 pub enum AppError {
-    UserNotFound,
+    NotFound,
     InvalidInput(Cow<'static, str>),
     InvalidCredentials,
     InternalError,
@@ -17,7 +17,7 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AppError::UserNotFound => (StatusCode::NOT_FOUND, "User not found".to_string()),
+            AppError::NotFound => (StatusCode::NOT_FOUND, "Not found".to_string()),
             AppError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg.into_owned()),
             AppError::InvalidCredentials => (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()),
             AppError::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string()),
