@@ -174,6 +174,6 @@ pub fn create_api_router() -> Router<Arc<AppState>> {
         )
         .merge(
             SwaggerUi::new("/swagger") // 用於 UI 的 endpoint
-                .url("/api-doc/openapi.json", ApiDoc::openapi()) // 提供 openapi.json 的路徑與內容
+                .url("/api-doc/openapi.json", ApiDoc::openapi()) // 提供 openapi.json
         )
 }
