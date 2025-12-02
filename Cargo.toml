@@ -22,3 +22,4 @@ sea-query = "0.32"
 chrono = { version = "0.4", features = ["serde"] }
 utoipa = { version = "5.4.0", features = ["axum_extras", "chrono", "uuid"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
+lapin = "3.7.2"
