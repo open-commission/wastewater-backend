@@ -49,7 +49,7 @@ impl RabbitMQManager {
     pub async fn disconnect(&self) -> Result<()> {
         let mut guard = self.connection.lock().await;
         if let Some(conn) = guard.take() {
-            conn.close(0, "").await?;
+            conn.close(0, "".into()).await?;
             info!("Disconnected from RabbitMQ");
         }
         Ok(())
@@ -78,7 +78,7 @@ impl RabbitMQManager {
         // 先声明 exchange（如果需要）
         channel
             .exchange_declare(
-                exchange,
+                exchange.into(), // 转换为 ShortString
                 lapin::ExchangeKind::Topic,
                 ExchangeDeclareOptions::default(),
                 FieldTable::default(),
@@ -88,8 +88,8 @@ impl RabbitMQManager {
         let payload = serde_json::to_vec(message)?;
         let confirm = channel
             .basic_publish(
-                exchange,
-                routing_key,
+                exchange.into(), // 转换为 ShortString
+                routing_key.into(), // 转换为 ShortString
                 BasicPublishOptions::default(),
                 &payload,
                 BasicProperties::default(),
@@ -115,7 +115,7 @@ impl RabbitMQManager {
 
         channel
             .exchange_declare(
-                exchange,
+                exchange.into(), // 转换为 ShortString
                 lapin::ExchangeKind::Topic,
                 ExchangeDeclareOptions::default(),
                 FieldTable::default(),
@@ -123,16 +123,16 @@ impl RabbitMQManager {
             .await?;
         channel
             .queue_declare(
-                queue_name,
+                queue_name.into(), // 转换为 ShortString
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
             .await?;
         channel
             .queue_bind(
-                queue_name,
-                exchange,
-                routing_key,
+                queue_name.into(), // 转换为 ShortString
+                exchange.into(), // 转换为 ShortString
+                routing_key.into(), // 转换为 ShortString
                 QueueBindOptions::default(),
                 FieldTable::default(),
             )
@@ -153,7 +153,7 @@ impl RabbitMQManager {
 
         channel
             .queue_declare(
-                queue_name,
+                queue_name.into(), // 转换为 ShortString
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
@@ -161,8 +161,8 @@ impl RabbitMQManager {
 
         let consumer = channel
             .basic_consume(
-                queue_name,
-                "", // 空 tag，让 server 自动生成
+                queue_name.into(), // 转换为 ShortString
+                "".into(), // 空 tag，让 server 自动生成，转换为 ShortString
                 BasicConsumeOptions::default(),
                 FieldTable::default(),
             )

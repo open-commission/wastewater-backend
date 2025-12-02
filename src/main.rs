@@ -11,7 +11,7 @@ mod utils;
 
 use app_state::AppState;
 use database::sea_orm_db::DbManager;
-use database::sea_orm_example::run_sea_orm_example;
+use message_queue::consumer_example;
 use message_queue::rabbitmq::{Message, RabbitMQManager};
 use models::user::Model as User;
 use routes::api::create_api_router;
@@ -54,6 +54,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(_) => println!("测试消息发送成功"),
                 Err(e) => println!("测试消息发送失败: {}", e),
             }
+            
+            // 启动消息消费者任务
+            match consumer_example::start_consumer_task(rabbitmq_manager.clone(), "boiler_queue").await {
+                Ok(handle) => {
+                    println!("消息消费者任务已启动");
+                    // 可以保存 handle 以便后续管理任务
+                    // 这里为了简单起见，我们不等待任务完成
+                    tokio::spawn(handle);
+                }
+                Err(e) => {
+                    println!("启动消息消费者任务失败: {}", e);
+                }
+            }
         }
         Err(e) => {
             println!("RabbitMQ 连接失败: {}", e);
@@ -82,9 +95,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         users: Arc::new(RwLock::new(initial_users)),
         db: db_manager,
     };
-
-    // 运行SeaORM示例
-    // run_sea_orm_example().await?;
 
     // 创建应用路由
     let app = Router::new()

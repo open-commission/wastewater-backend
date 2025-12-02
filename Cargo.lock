@@ -1290,6 +1290,7 @@ dependencies = [
  "axum",
  "bincode",
  "chrono",
+ "futures-util",
  "lapin",
  "redb",
  "rumqttc",
